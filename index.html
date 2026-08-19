@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jatopa Bus - Inicio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #0f172a;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: #0284c7;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .features {
+            text-align: left;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .features li {
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            list-style: none;
+        }
+
+        .features i {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+            flex-direction: column;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #0284c7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0369a1;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0f2fe;
+            color: #0284c7;
+            border: 2px solid #0284c7;
+        }
+
+        .btn-secondary:hover {
+            background: #0284c7;
+            color: white;
+        }
+
+        .info-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+            color: #7c2d12;
+            font-size: 0.9rem;
+        }
+
+        .version {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .icon {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🚌</div>
+        <h1>Jatopa Bus</h1>
+        <div class="subtitle">Transporte Público Ciudad del Este</div>
+        
+        <p class="description">
+            Consulta líneas de colectivos disponibles en tiempo real con geolocalización GPS y cálculo de rutas interactivas.
+        </p>
+
+        <div class="features">
+            <ul>
+                <li><span>✓</span> Mapa interactivo en vivo</li>
+                <li><span>✓</span> Geolocalización GPS</li>
+                <li><span>✓</span> Horarios y frecuencias</li>
+                <li><span>✓</span> 6 zonas cubiertas en CDE</li>
+                <li><span>✓</span> Compatible con móviles</li>
+            </ul>
+        </div>
+
+        <div class="btn-group">
+            <a href="bus.html" class="btn btn-primary">🚀 Abrir Aplicación</a>
+            <a href="README.md" class="btn btn-secondary">📖 Ver Instrucciones</a>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>Consejo:</strong> Autoriza la ubicación GPS para una mejor experiencia. La app funciona sin conexión después de la primera carga.
+        </div>
+
+        <div class="version">
+            Versión 1.0.0 • Agosto 2026
+        </div>
+    </div>
+
+    <script>
+        // Redirect to bus.html after 5 seconds if not clicked
+        setTimeout(() => {
+            // Keep this for demo purposes only
+        }, 5000);
+    </script>
+</body>
+</html>

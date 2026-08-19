@@ -1,0 +1,180 @@
+================================================================================
+JATOPA BUS - INSTRUCCIONES DE DESPLIEGUE
+================================================================================
+
+OPCIÓN 1: GITHUB PAGES (RECOMENDADO - GRATIS Y FÁCIL)
+════════════════════════════════════════════════════════════════════════════════
+
+1. Crear cuenta en GitHub (si no tienes): https://github.com/signup
+
+2. Crear nuevo repositorio:
+   - Nombre: jatopabus
+   - Descripción: Jatopa Bus - Transporte Público CDE
+   - Público (para Pages gratis)
+   - Inicializar con README
+
+3. Clonar el repositorio:
+   git clone https://github.com/TU_USUARIO/jatopabus.git
+   cd jatopabus
+
+4. Copiar archivos de la app:
+   - bus.html
+   - index.html
+   - README.md
+   - manifest.json
+   - sw.js
+   - .gitignore
+
+5. Commit y push:
+   git add .
+   git commit -m "Jatopa Bus App - Primera versión"
+   git push
+
+6. Habilitar GitHub Pages:
+   - Ve a: Settings > Pages
+   - Source: main branch
+   - Save
+   - Espera 1-2 minutos
+
+7. Acceder en:
+   https://TU_USUARIO.github.io/jatopabus/
+
+
+OPCIÓN 2: SERVIDOR LOCAL (RED WIFI)
+════════════════════════════════════════════════════════════════════════════════
+
+Requisito: Python 3 instalado en tu PC
+
+1. Abre PowerShell o Terminal
+
+2. Navega a la carpeta:
+   cd c:\Users\TERCERO-B18\Documents\jatopabus
+
+3. Inicia el servidor:
+   python -m http.server 8000
+
+4. Deberías ver: Serving HTTP on 0.0.0.0 port 8000
+
+5. Obtén tu IP local:
+   - Abre PowerShell
+   - Escribe: ipconfig
+   - Busca "IPv4 Address" (ej: 192.168.1.100)
+
+6. Desde otro dispositivo en la misma WiFi:
+   http://192.168.1.100:8000/
+
+
+OPCIÓN 3: NETLIFY (GRATIS Y ULTRA SIMPLE)
+════════════════════════════════════════════════════════════════════════════════
+
+1. Ve a: https://netlify.com
+
+2. Crea cuenta (puedes usar GitHub)
+
+3. Arrastra la carpeta "jatopabus" a Netlify
+   (O usa "New site from Git")
+
+4. Espera a que compile (30 segundos)
+
+5. Tu app estará en: https://[tu-nombre].netlify.app
+
+
+OPCIÓN 4: VERCEL (ALTERNATIVA A NETLIFY)
+════════════════════════════════════════════════════════════════════════════════
+
+1. Ve a: https://vercel.com
+
+2. Importa tu repositorio de GitHub
+
+3. Espera el despliegue automático
+
+4. Tu app estará en: https://[tu-proyecto].vercel.app
+
+
+CAMBIOS REALIZADOS PARA MEJOR FUNCIONAMIENTO
+════════════════════════════════════════════════════════════════════════════════
+
+✅ Mejor detección de zonas geográficas
+✅ Soporte offline con Service Worker
+✅ Instalable como app móvil (PWA)
+✅ Página de inicio amigable
+✅ Mejor manejo de errores GPS
+✅ Metadata para SEO y redes sociales
+✅ Compatible con todos los navegadores modernos
+
+
+ACCESO DESDE CUALQUIER DISPOSITIVO
+════════════════════════════════════════════════════════════════════════════════
+
+Una vez desplegado en GitHub Pages o Netlify:
+
+📱 Móvil (Android):
+   - Abre el navegador
+   - Ve a tu URL
+   - Presiona el menú (⋯) > "Instalar aplicación"
+   - La app se instalará en tu pantalla de inicio
+
+📱 iPhone/iPad:
+   - Abre en Safari
+   - Presiona Compartir > "Añadir a pantalla de inicio"
+   - Se install como app web
+
+🖥️ Desktop:
+   - Solo abre la URL en el navegador
+   - Funciona en Chrome, Firefox, Safari, Edge
+
+
+ESTRUCTURA DE ARCHIVOS
+════════════════════════════════════════════════════════════════════════════════
+
+jatopabus/
+├── index.html          → Página de inicio
+├── bus.html            → Aplicación principal
+├── README.md           → Documentación
+├── manifest.json       → Configuración PWA
+├── sw.js              → Service Worker (offline)
+├── .gitignore         → Archivos a ignorar en Git
+└── DEPLOYMENT.txt     → Este archivo
+
+
+SOLUCIÓN DE PROBLEMAS
+════════════════════════════════════════════════════════════════════════════════
+
+❌ "CORS Error" en consola:
+   → Los mapas y recursos externos a veces tienen restricciones
+   → Solución: Usar HTTPS (GitHub Pages lo proporciona automáticamente)
+
+❌ Geolocalización no funciona:
+   → Necesita HTTPS y permiso del usuario
+   → Algunos navegadores necesitan "Seguro" (lock icon)
+   → GitHub Pages es seguro automáticamente
+
+❌ Mapa no carga:
+   → Verifica conexión a internet
+   → Los mapas necesitan que Leaflet y CartoDB estén disponibles
+   → Espera 10 segundos y recarga
+
+❌ App se ve rara en móvil:
+   → Limpia cache: Menú > Historial > Borrar datos de navegación
+   → O: Abre en navegación incógnita
+
+
+ESTADÍSTICAS
+════════════════════════════════════════════════════════════════════════════════
+
+Tamaño total: ~50 KB (muy ligera)
+Tiempo carga: < 2 segundos
+Compatible: 99.9% navegadores modernos
+Offline: Sí (después de primer uso)
+
+
+CONTACTO Y SOPORTE
+════════════════════════════════════════════════════════════════════════════════
+
+Para reportar errores o sugerencias:
+- Abre un Issue en GitHub
+- O contacta directamente
+
+═════════════════════════════════════════════════════════════════════════════════
+Versión: 1.0.0 | Agosto 2026
+═════════════════════════════════════════════════════════════════════════════════

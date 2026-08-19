@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Jatopa Bus - Transporte Público en Ciudad del Este. Consulta líneas disponibles en tiempo real con geolocalización GPS.">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230284c7' width='180' height='180'/><text x='50%' y='50%' font-size='90' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='central'>JB</text></svg>">
+    <title>Jatopa Bus - Transporte Público CDE</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0284c7">
+
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --accent: #10b981;
+            --surface: #ffffff;
+            --bg-slate: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-slate);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* Ocultar panel de instrucciones de Leaflet Routing Machine */
+        .leaflet-routing-container {
+            display: none !important;
+        }
+
+        /* Header tipo App */
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, var(--primary), #0284c7);
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-text span {
+            font-size: 0.72rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-gps {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid rgba(2, 132, 199, 0.2);
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-gps:active {
+            transform: scale(0.96);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Banner de Estado */
+        .status-banner {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 8px 16px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999;
+            box-shadow: inset 0 -1px 0 rgba(255,255,255,0.1);
+        }
+
+        .status-banner .status-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .status-dot.pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Layout Principal */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Bottom Sheet Interactivo */
+        .bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            z-index: 500;
+            max-height: 55%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .sheet-handle {
+            width: 36px;
+            height: 4px;
+            background-color: #cbd5e1;
+            border-radius: 2px;
+            margin: 10px auto 6px auto;
+        }
+
+        .sheet-header {
+            padding: 4px 16px 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sheet-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .zone-badge {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .bus-list {
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Tarjeta de Colectivo */
+        .bus-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .bus-card:active {
+            transform: scale(0.98);
+            border-color: var(--primary);
+        }
+
+        .bus-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bus-line-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bus-number {
+            background: var(--text-main);
+            color: white;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            min-width: 65px;
+            text-align: center;
+        }
+
+        .bus-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .eta-badge {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bus-route {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bus-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 6px;
+            margin-top: 2px;
+        }
+
+        .bus-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px 12px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 0.85rem;
+        }
+
+        /* Custom Markers UI */
+        .custom-pin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid white;
+        }
+
+        .pin-origin {
+            background: #0284c7;
+        }
+
+        .pin-destination {
+            background: #ef4444;
+        }
+
+        .status-banner i {
+            opacity: 0.5;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                flex-direction: row;
+            }
+            #map {
+                height: 100%;
+            }
+            .bottom-sheet {
+                position: relative;
+                width: 380px;
+                max-height: 100%;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+                border-right: 1px solid var(--border-color);
+            }
+            .sheet-handle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .bottom-sheet {
+                max-height: 65%;
+            }
+            .brand-text h1 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-bus"></i>
+            </div>
+            <div class="brand-text">
+                <h1>Jatopa Bus</h1>
+                <span>Ciudad del Este</span>
+            </div>
+        </div>
+        <button class="btn-gps" id="btn-gps">
+            <i class="fa-solid fa-location-crosshairs"></i> Mi Ubicación
+        </button>
+    </header>
+
+    <!-- Banner de Estado -->
+    <div class="status-banner">
+        <div class="status-info">
+            <div class="status-dot pulse" id="status-dot"></div>
+            <span id="status-text">Toque el mapa en CDE para seleccionar su destino</span>
+        </div>
+        <i class="fa-solid fa-route"></i>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <div id="map"></div>
+
+        <!-- Panel Deslizable / Bottom Sheet -->
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title">
+                    <span>Líneas Disponibles</span>
+                    <span class="zone-badge" id="zone-badge">CDE Centro</span>
+                </div>
+            </div>
+            <div class="bus-list" id="bus-list">
+                <!-- Se poblará dinámicamente -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        // Configuración Inicial y Datos
+        const CDE_CENTER = [-25.5141, -54.6106]; // Centro de Ciudad del Este
+        let currentOrigin = [...CDE_CENTER];
+        let currentDestination = null;
+        let map, routingControl;
+        let originMarker, destinationMarker;
+        let mapClickTimeout; // Para debounce de clics
+
+        // Base de Datos Simulada de Colectivos por Zonas de CDE
+        const busRoutesData = {
+            "Microcentro / Aduana": [
+                { line: "Línea 1", company: "Ciudad del Este S.R.L.", route: "Aduana - Km 7 Ciudad Nueva", eta: "4 min", freq: "Cada 10 min", schedule: "05:00 - 22:30" },
+                { line: "Línea 3", company: "Trans Paraná", route: "Microcentro - Barrio San José - Km 9", eta: "8 min", freq: "Cada 12 min", schedule: "05:15 - 22:00" },
+                { line: "Línea 12", company: "Empresa Matiauda", route: "Aduana - Av. San José - Mercado San José", eta: "12 min", freq: "Cada 15 min", schedule: "05:30 - 21:00" }
+            ],
+            "San José / Mercado": [
+                { line: "Línea 3", company: "Trans Paraná", route: "Microcentro - Barrio San José - Km 9", eta: "3 min", freq: "Cada 12 min", schedule: "05:15 - 22:00" },
+                { line: "Línea 4", company: "Ciudad del Este S.R.L.", route: "San José - Area 1 - Franco", eta: "7 min", freq: "Cada 15 min", schedule: "05:30 - 21:30" },
+                { line: "Línea 12", company: "Empresa Matiauda", route: "Aduana - Av. San José - Mercado San José", eta: "10 min", freq: "Cada 15 min", schedule: "05:30 - 21:00" }
+            ],
+            "Km 4 / Km 7 / Ciudad Nueva": [
+                { line: "Línea 1", company: "Ciudad del Este S.R.L.", route: "Aduana - Km 7 Ciudad Nueva", eta: "5 min", freq: "Cada 10 min", schedule: "05:00 - 22:30" },
+                { line: "Línea 7", company: "Santo Domingo", route: "Km 4 - Supercarretera - Hernandarias", eta: "9 min", freq: "Cada 20 min", schedule: "05:00 - 20:00" },
+                { line: "Línea 11", company: "3 de Febrero", route: "Km 7 - Av. Peru - Acaray", eta: "14 min", freq: "Cada 15 min", schedule: "05:45 - 21:00" }
+            ],
+            "Km 9 / Km 12 (Mondo Off)": [
+                { line: "Línea 3", company: "Trans Paraná", route: "Microcentro - Barrio San José - Km 9", eta: "6 min", freq: "Cada 12 min", schedule: "05:15 - 22:00" },
+                { line: "Línea 8", company: "Mundo del Este", route: "Centro - Ruta PY02 - Km 12 SubUrbano", eta: "11 min", freq: "Cada 25 min", schedule: "05:00 - 19:30" }
+            ],
+            "Acaray / Av. Perú": [
+                { line: "Línea 11", company: "3 de Febrero", route: "Km 7 - Av. Peru - Acaray", eta: "8 min", freq: "Cada 15 min", schedule: "05:45 - 21:00" },
+                { line: "Línea 2", company: "Ciudad del Este S.R.L.", route: "Acaray 5km - Mercado - Aduana", eta: "15 min", freq: "Cada 20 min", schedule: "05:30 - 20:30" }
+            ],
+            "Presidente Franco / Área 5": [
+                { line: "Línea 4", company: "Ciudad del Este S.R.L.", route: "San José - Area 1 - Franco", eta: "4 min", freq: "Cada 15 min", schedule: "05:30 - 21:30" },
+                { line: "Matiauda Franco", company: "Empresa Matiauda", route: "Centro CDE - Salto del Monday", eta: "12 min", freq: "Cada 30 min", schedule: "06:00 - 19:00" }
+            ]
+        };
+
+        // Inicialización del Mapa
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: false
+            }).setView(CDE_CENTER, 14);
+
+            // Tiles limpios de CartoDB Positron
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Re-agregar control de zoom abajo a la derecha
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // Crear Marcador de Origen por defecto
+            createOriginMarker(CDE_CENTER);
+
+            // Evento Click en el Mapa para Destino
+            map.on('click', onMapClick);
+        }
+
+        // Iconos Personalizados
+        function createIcon(type) {
+            const isOrigin = type === 'origin';
+            const iconHtml = isOrigin ? '<i class="fa-solid fa-street-view"></i>' : '<i class="fa-solid fa-flag-checkered"></i>';
+            const className = isOrigin ? 'custom-pin pin-origin' : 'custom-pin pin-destination';
+            
+            return L.divIcon({
+                html: `<div class="${className}" style="width: 32px; height: 32px; font-size: 14px;">${iconHtml}</div>`,
+                className: '',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+        }
+
+        function createOriginMarker(coords) {
+            if (originMarker) map.removeLayer(originMarker);
+            originMarker = L.marker(coords, { icon: createIcon('origin') })
+                .addTo(map)
+                .bindPopup("<b>Tu Ubicación</b><br>Punto de origen de viaje");
+        }
+
+        // Manejador de Clics en Mapa (con debounce)
+        function onMapClick(e) {
+            if (mapClickTimeout) clearTimeout(mapClickTimeout);
+            
+            mapClickTimeout = setTimeout(() => {
+                const { lat, lng } = e.latlng;
+                
+                // Validar coordenadas dentro de CDE
+                if (!isValidCDECoordinates(lat, lng)) {
+                    alert('Por favor seleccione una ubicación dentro de Ciudad del Este');
+                    return;
+                }
+                
+                currentDestination = [lat, lng];
+
+                // Marcador Destino
+                if (destinationMarker) map.removeLayer(destinationMarker);
+                destinationMarker = L.marker(currentDestination, { icon: createIcon('destination') }).addTo(map);
+
+                // Trazar Ruta usando Leaflet Routing Machine
+                calculateRoute(currentOrigin, currentDestination);
+
+                // Determinar Zona de CDE y Actualizar Panel
+                const zone = getCDEZone(lat, lng);
+                updateUIForZone(zone);
+            }, 300);
+        }
+
+        // Validar si las coordenadas están dentro de CDE
+        function isValidCDECoordinates(lat, lng) {
+            // Bounds aproximados de Ciudad del Este
+            const minLat = -25.55;
+            const maxLat = -25.48;
+            const minLng = -54.65;
+            const maxLng = -54.58;
+            return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
+        }
+
+        // Trazado de Ruta
+        function calculateRoute(from, to) {
+            if (routingControl) map.removeControl(routingControl);
+
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(from[0], from[1]),
+                    L.latLng(to[0], to[1])
+                ],
+                lineOptions: {
+                    styles: [{ color: '#0284c7', opacity: 0.8, weight: 6 }]
+                },
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: true,
+                show: false // Asegura no mostrar instrucciones
+            }).addTo(map);
+        }
+
+        // Cálculo de Zonas geográficas para CDE (mejorado con mejor precisión)
+        function getCDEZone(lat, lng) {
+            // Definir zonas con límites más precisos
+            const zones = [
+                {
+                    name: "Microcentro / Aduana",
+                    bounds: { minLat: -25.525, maxLat: -25.508, minLng: -54.615, maxLng: -54.600 }
+                },
+                {
+                    name: "San José / Mercado",
+                    bounds: { minLat: -25.533, maxLat: -25.515, minLng: -54.625, maxLng: -54.605 }
+                },
+                {
+                    name: "Acaray / Av. Perú",
+                    bounds: { minLat: -25.520, maxLat: -25.505, minLng: -54.635, maxLng: -54.615 }
+                },
+                {
+                    name: "Km 4 / Km 7 / Ciudad Nueva",
+                    bounds: { minLat: -25.540, maxLat: -25.515, minLng: -54.630, maxLng: -54.600 }
+                },
+                {
+                    name: "Km 9 / Km 12 (Mondo Off)",
+                    bounds: { minLat: -25.555, maxLat: -25.535, minLng: -54.665, maxLng: -54.640 }
+                },
+                {
+                    name: "Presidente Franco / Área 5",
+                    bounds: { minLat: -25.550, maxLat: -25.530, minLng: -54.620, maxLng: -54.590 }
+                }
+            ];
+            
+            // Buscar zona que contenga las coordenadas
+            for (const zone of zones) {
+                const { minLat, maxLat, minLng, maxLng } = zone.bounds;
+                if (lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng) {
+                    return zone.name;
+                }
+            }
+            
+            // Zona por defecto
+            return "Km 4 / Km 7 / Ciudad Nueva";
+        }
+
+        // Actualizar Interfaz de Usuario
+        function updateUIForZone(zone) {
+            const badge = document.getElementById('zone-badge');
+            const statusText = document.getElementById('status-text');
+            const busListContainer = document.getElementById('bus-list');
+
+            badge.innerText = zone;
+            statusText.innerText = `Ruta trazada hacia zona: ${zone}`;
+
+            const routes = busRoutesData[zone] || [];
+
+            if (routes.length === 0) {
+                busListContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-bus-simple"></i>
+                        <p>No se encontraron itinerarios directos para esta zona seleccionada.</p>
+                    </div>`;
+                return;
+            }
+
+            busListContainer.innerHTML = routes.map(bus => `
+                <div class="bus-card">
+                    <div class="bus-card-top">
+                        <div class="bus-line-info">
+                            <span class="bus-number">${bus.line}</span>
+                            <span class="bus-name">${bus.company}</span>
+                        </div>
+                        <div class="eta-badge">
+                            <i class="fa-regular fa-clock"></i> ${bus.eta}
+                        </div>
+                    </div>
+                    <div class="bus-route">
+                        <i class="fa-solid fa-route" style="color: var(--primary)"></i> ${bus.route}
+                    </div>
+                    <div class="bus-meta">
+                        <span class="bus-meta-item"><i class="fa-solid fa-repeat"></i> ${bus.freq}</span>
+                        <span class="bus-meta-item"><i class="fa-regular fa-calendar-check"></i> ${bus.schedule}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Activar Geolocalización GPS
+        function setupGPS() {
+            const btnGps = document.getElementById('btn-gps');
+            const statusText = document.getElementById('status-text');
+
+            if (!navigator.geolocation) {
+                btnGps.disabled = true;
+                btnGps.style.opacity = '0.5';
+                btnGps.title = 'Geolocalización no soportada';
+                return;
+            }
+
+            btnGps.addEventListener('click', () => {
+                statusText.innerText = "Obteniendo ubicación precisa en CDE...";
+                btnGps.disabled = true;
+                btnGps.style.opacity = '0.5';
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        
+                        if (!isValidCDECoordinates(latitude, longitude)) {
+                            statusText.innerText = "Locate fuera de CDE. Usando ubicación por defecto.";
+                            currentOrigin = [...CDE_CENTER];
+                        } else {
+                            currentOrigin = [latitude, longitude];
+                            statusText.innerText = "Ubicación actualizada correctamente";
+                        }
+
+                        map.flyTo(currentOrigin, 15, { animate: true, duration: 1.2 });
+                        createOriginMarker(currentOrigin);
+
+                        if (currentDestination) {
+                            calculateRoute(currentOrigin, currentDestination);
+                        }
+                        
+                        btnGps.disabled = false;
+                        btnGps.style.opacity = '1';
+                    },
+                    (error) => {
+                        let errorMsg = "Error obteniendo GPS. Usando ubicación por defecto.";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg = "Permiso de ubicación denegado";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg = "Ubicación no disponible";
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg = "Tiempo de espera agotado";
+                                break;
+                        }
+                        statusText.innerText = errorMsg;
+                        console.warn(`ERROR GPS(${error.code}): ${error.message}`);
+                        
+                        btnGps.disabled = false;
+                        btnGps.style.opacity = '1';
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
+        }
+
+        // Inicializar App al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                initMap();
+                setupGPS();
+                
+                // Carga inicial con zona por defecto
+                updateUIForZone("Microcentro / Aduana");
+                
+                // Registrar Service Worker para soporte offline
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(reg => console.log('Service Worker registrado:', reg))
+                        .catch(err => console.log('Error registrando SW:', err));
+                }
+                
+                // Log de inicialización exitosa
+                console.log('Jatopa Bus app initialized successfully');
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                document.getElementById('status-text').innerText = "Error inicializando la aplicación";
+            }
+        });
+    </script>
+</body>
+</html>
